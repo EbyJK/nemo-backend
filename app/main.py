@@ -1,8 +1,23 @@
+
+from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi import FastAPI
-from app.routes import classify, summarize, tasks,process
+from app.routes import classify, summarize, tasks,process,read
 
 app = FastAPI(title="Nemo Backend")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(
     classify.router,
@@ -15,6 +30,8 @@ app.include_router(summarize.router, prefix="/summarize", tags=["Summarization"]
 app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 
 app.include_router(process.router, prefix="/process-email", tags=["Orchestrator"])
+
+app.include_router(read.router, tags=["Read"])
 
 
 @app.get("/")

@@ -11,3 +11,27 @@ def insert_summary(summary_data: dict):
 def insert_tasks(tasks: list):
     response = supabase.table("tasks").insert(tasks).execute()
     return response.data
+
+
+
+def get_summaries():
+    response = (
+        supabase
+        .table("summaries")
+        .select("id, summary, email_id, created_at")
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return response.data
+
+
+def get_tasks(completed: bool = False):
+    response = (
+        supabase
+        .table("tasks")
+        .select("id, title, due_date, priority, completed, email_id")
+        .eq("completed", completed)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return response.data
