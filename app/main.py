@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI
 from app.routes import classify, summarize, tasks,process,read
+from app.routes import calendar
 
 app = FastAPI(title="Nemo Backend")
 
@@ -33,6 +34,7 @@ app.include_router(process.router, prefix="/process-email", tags=["Orchestrator"
 
 app.include_router(read.router, tags=["Read"])
 
+app.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
 
 @app.get("/")
 def health_check():
