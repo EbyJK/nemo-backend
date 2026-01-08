@@ -18,7 +18,7 @@ def get_summaries():
     response = (
         supabase
         .table("summaries")
-        .select("id, summary, email_id, created_at")
+        .select("id, summary, email_id,confidence, created_at")
         .order("created_at", desc=True)
         .execute()
     )
@@ -29,7 +29,7 @@ def get_tasks(completed: bool = False):
     response = (
         supabase
         .table("tasks")
-        .select("id, title, due_date, priority, completed, email_id")
+        .select("id, title, due_date, priority,context,completed, email_id")
         .eq("completed", completed)
         .order("created_at", desc=True)
         .execute()

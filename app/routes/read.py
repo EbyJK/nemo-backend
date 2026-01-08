@@ -11,3 +11,9 @@ def fetch_summaries():
 @router.get("/tasks")
 def fetch_tasks(completed: bool = False):
     return get_tasks(completed)
+
+
+# @router.get("/summaries")
+# def get_summaries():
+#     res = supabase.table("summaries").select("summary, confidence").execute()
+#     return res.data

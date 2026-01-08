@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from google.oauth2.credentials import Credentials
 from fastapi import Body
 from datetime import datetime, timedelta
+from app.core.supabase import supabase
 
 router = APIRouter()
 
@@ -71,7 +72,25 @@ def google_callback(request: Request):
     flow.fetch_token(code=code)
 
     credentials: Credentials = flow.credentials
+    
+    
+    user_id="5255d7c4-60ad-4120-941f-94ae6ebbbc3d"
 
+
+
+    
+    
+    
+    # user_id = request.state.user.id  # Supabase user
+    supabase.table("google_accounts").upsert({
+        "user_id": user_id,
+        "access_token": credentials.token,
+        "refresh_token": credentials.refresh_token,
+        "expires_at": credentials.expiry.isoformat(),
+        "email": credentials.id_token.get("email") if credentials.id_token else None
+    }).execute()
+     
+     
     # Store tokens (TEMP – later we move to DB)
     TOKEN_STORE["access_token"] = credentials.token
     TOKEN_STORE["refresh_token"] = credentials.refresh_token
@@ -127,3 +146,13 @@ def push_task_to_calendar(
         "event_id": created_event.get("id"),
         "event_link": created_event.get("htmlLink")
     }
+    
+@router.get("/status")
+def google_status():
+        if "access_token" in TOKEN_STORE:
+            return {
+                "connected": True
+            }
+        return {
+            "connected": False
+        }
