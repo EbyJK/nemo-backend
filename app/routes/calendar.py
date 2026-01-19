@@ -8,6 +8,8 @@ from google.oauth2.credentials import Credentials
 from fastapi import Body
 from datetime import datetime, timedelta
 from app.core.supabase import supabase
+from zoneinfo import ZoneInfo
+from dateutil import parser
 
 router = APIRouter()
 
@@ -122,7 +124,9 @@ def push_task_to_calendar(
     service = build("calendar", "v3", credentials=credentials)
 
     start_time = datetime.fromisoformat(due_date)
+    start_time = start_time.replace(tzinfo=ZoneInfo("Asia/Kolkata"))
     end_time = start_time + timedelta(hours=1)
+    print("RAW due_date received:", due_date)
 
     event = {
         "summary": title,
@@ -135,6 +139,46 @@ def push_task_to_calendar(
             "timeZone": "Asia/Kolkata"
         }
     }
+    
+    # start_time = datetime.fromisoformat(due_date)
+    # end_time = start_time + timedelta(hours=1)
+    # Parse ISO string WITH timezone awareness
+    # start_time_utc = parser.isoparse(due_date)
+      
+# Convert to Asia/Kolkata
+    # start_time = start_time_utc.astimezone(ZoneInfo("Asia/Kolkata"))
+
+    # # if "T" in due_date:
+    # if start_time.time() != datetime.min.time():
+    # # Timed task / meeting
+    #     end_time = start_time + timedelta(hours=1)
+    #     event = {
+    #     "summary": title,
+    #     "start": {
+    #         "dateTime": start_time.isoformat(),
+    #         "timeZone": "Asia/Kolkata"
+    #     },
+    #     "end": {
+    #         "dateTime": end_time.isoformat(),
+    #         "timeZone": "Asia/Kolkata"
+    #     }
+    # }
+    # else:
+    # # Deadline-style task → all-day event
+    #     event = {
+    #     "summary": title,
+    #     "start": {
+    #         "date": start_time.date().isoformat()
+    #     },
+    #     "end": {
+    #         "date": (start_time.date() + timedelta(days=1)).isoformat()
+    #     }
+    # }
+    # print("Parsed UTC:", start_time_utc)
+    print("Converted IST:", start_time)
+    print("Final calendar start time:", start_time, start_time.tzinfo)
+
+
 
     created_event = service.events().insert(
         calendarId="primary",
