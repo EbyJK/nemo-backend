@@ -6,6 +6,7 @@ from app.routes import classify, summarize, tasks,process,read
 from app.routes import calendar
 from app.routes import gmail
 
+from app.routes import email_classifier
 
 app = FastAPI(title="Nemo Backend")
 
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(gmail.router, prefix="/gmail", tags=["Gmail"])
+app.include_router(email_classifier.router, tags=["Email Classification"])
 
 app.include_router(
     classify.router,
