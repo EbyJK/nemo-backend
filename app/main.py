@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from app.routes import classify, summarize, tasks,process,read
 from app.routes import calendar
+from app.routes import gmail
+
 
 app = FastAPI(title="Nemo Backend")
 
@@ -19,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(gmail.router, prefix="/gmail", tags=["Gmail"])
 
 app.include_router(
     classify.router,

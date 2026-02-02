@@ -1,16 +1,27 @@
+from pydoc import text
 from fastapi import APIRouter
 from app.schemas.email import EmailInput
 from app.schemas.classification import ClassificationOutput
-from app.routes.classify import classify_email
+# from app.routes.classify import classify_email
 from app.routes.summarize import summarize_email
 from app.routes.tasks import extract_tasks
 from app.core.db import insert_email, insert_summary, insert_tasks
+from app.ml.classifier import classify_proba
+
 
 router = APIRouter()
 
 @router.post("/")
 def process_email(email: EmailInput):
-    classification = classify_email(email)
+    # classification = classify_email(email)
+    text = email.subject + " " + email.body
+    label, confidence = classify_proba(text)
+
+    classification = {
+    "is_corporate": (label.lower() == "corporate"),
+    "confidence": confidence,
+    "category": label.lower()
+}
 
     if not classification["is_corporate"]:
         return {

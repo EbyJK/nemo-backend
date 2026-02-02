@@ -1,63 +1,13 @@
-# from fastapi import APIRouter
-# from app.schemas.email import EmailInput
-# from app.schemas.classification import ClassificationOutput
-
-# router = APIRouter()
-
-# @router.post("/", response_model=ClassificationOutput)
-# def classify_email(email: EmailInput):
-#     return {
-#         "is_corporate": True,
-#         "confidence": 0.95,
-#         "category": "meeting"
-#     }
-
-
-
-
-# from fastapi import APIRouter
-# from app.schemas.email import EmailInput
-# from app.schemas.classification import ClassificationOutput
-# from app.ml.classifier import classify_text, classify_proba
-
-# router = APIRouter()
-
-# @router.post("/", response_model=ClassificationOutput)
-# def classify_email(email: EmailInput):
-#     # Combine subject + body into a single text
-#     full_text = f"{email.subject} {email.body}"
-
-#     # Get prediction and confidence
-#     label, confidence = classify_proba(full_text)
-
-#     # Convert label to schema fields
-#     is_corporate = True if label == "Corporate" else False
-
-#     return {
-#         "is_corporate": is_corporate,
-#         "confidence": confidence,
-#         "category": label.lower()   # corporate / non_corporate
-#     }
-
-
-
-
-
-
-
-from cProfile import label
 from fastapi import APIRouter
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from app.routes.calendar import TOKEN_STORE, CLIENT_ID, CLIENT_SECRET
 from app.ml.classifier import classify_proba
-from app.ml.category_classifier import detect_category    # <-- NEW
 from email import message_from_bytes
 import base64
 from app.ml.category_classifier import detect_category
 
 router = APIRouter()
-
 
 def decode_email_body(msg):
     if msg.get("parts"):
@@ -74,13 +24,13 @@ def decode_email_body(msg):
         return decoded
     except:
         return ""
-
+    
 
 @router.get("/list")
 def list_emails():
     if "access_token" not in TOKEN_STORE:
         return {"error": "User not authenticated"}
-
+    
     creds = Credentials(
         token=TOKEN_STORE["access_token"],
         refresh_token=TOKEN_STORE["refresh_token"],
@@ -108,38 +58,23 @@ def list_emails():
         sender = next((h["value"] for h in headers if h["name"] == "From"), "")
 
         body = decode_email_body(msg["payload"])
-
-        # ---- ML classifier (corporate/non-corporate) ----
+        
         label, confidence = classify_proba(subject + " " + body)
-        # NEW → detect detailed category only if corporate
         if label == "corporate":
-          detailed = detect_category(subject + " " + body)
+            detailed = detect_category(subject + " " + body)
         else:
             detailed = "none"
-        # ---- NEW: category detection ----
-        category = detect_category(subject, body)
 
         output.append({
             "id": m["id"],
             "subject": subject,
             "sender": sender,
             "body": body[:500],
-            "is_corporate": label.lower(),
-            "category": category,         # <---- NEW CATEGORY
+            "category": label.lower(),
             "confidence": confidence,
-             "detailed_category": detailed,
+            "detailed_category": detailed,
         })
 
-    return {"emails": output}
-
-
-
-
-
-
-
-
-
-
-
-
+    return {
+        "emails": output
+    }

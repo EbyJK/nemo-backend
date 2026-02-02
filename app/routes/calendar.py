@@ -21,7 +21,8 @@ CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = "http://localhost:8000/calendar/callback"
 
-SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
+SCOPES = ["https://www.googleapis.com/auth/calendar.events",
+          "https://www.googleapis.com/auth/gmail.readonly"]
 
 @router.get("/auth")
 def google_auth():
