@@ -38,9 +38,9 @@ import re
 
 CATEGORIES = {
     "meeting": [
-        r"\bmeeting\b", r"\bcall\b", r"\bconference\b",
-        r"\bsync\b", r"\bcatch up\b", r"\bschedule\b",
-        r"\bappointment\b"
+        r"\bmeeting\b", r"\bcall\b", r"\bconference\b",r"\bvideo meeting\b", r"\bdiscussion\b",r"\follow[- ]?up\b",
+        r"\bsync\b", r"\bcatch up\b", r"\bvideo call\b", r"\bzoom\b", r"\bteams\b", r"\bcalendar\b", r"\bschedule\b",
+        r"\bappointment\b", r"\bwebinar\b", r"\bworkshop\b", r"\btraining\b", r"\bagenda\b", r"\bminutes\b",r"\breschedule\b", r"\bfollow up\b"
     ],
     "task": [
         r"\bplease\b.*\b(send|review|update|complete)\b",
@@ -71,6 +71,11 @@ CATEGORIES = {
     "marketing": [
         r"\boffer\b", r"\bdiscount\b", r"\bpromotion\b",
         r"\bmarketing\b", r"\bsale\b"
+    ],
+    
+    "linkedin": [
+        r"\blinkedin\b", r"\bconnection\b", r"\bendorsement\b",r"\brecommend\b",r"\bviews\b",
+        r"\brecommendation\b", r"\bprofile\b", r"\bnetwork\b",r"\bmessage\b", r"\bcontact\b", r"\bjob\b", r"\bopportunity\b"
     ],
 }
 
