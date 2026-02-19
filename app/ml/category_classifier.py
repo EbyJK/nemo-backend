@@ -77,6 +77,19 @@ CATEGORIES = {
         r"\blinkedin\b", r"\bconnection\b", r"\bendorsement\b",r"\brecommend\b",r"\bviews\b",
         r"\brecommendation\b", r"\bprofile\b", r"\bnetwork\b",r"\bmessage\b", r"\bcontact\b", r"\bjob\b", r"\bopportunity\b"
     ],
+    "presentation": [
+        r"\bpresentation\b", r"\bdeck\b", r"\bslides\b",
+        r"\bpitch\b", r"\breport\b", r"\bproposal\b",r"\breschedul\b", r"\bpostpone\b", r"\bdelay\b"
+    ],
+    "office": [
+        r"\bprinter\b", r"\bmaintenance\b", r"\bfacility\b",
+        r"\boffice\b", r"\bworkspace\b", r"\bcleaning\b"
+    ],
+    "files":[
+        r"\bfile\b", r"\bdocument\b", r"\battachment\b",r"\battached",
+        r"\bpdf\b", r"\bword\b", r"\bppt\b",r"\bspreadsheet\b", r"\bdrive\b", r"\bshare\b", r"\baccess\b", r"\bpermission\b",
+        r"\bversion\b", r"\brevision\b", r"\bupdate\b",r"\bscreenshot\b", r"\bphoto\b", r"\bimage\b"
+    ]
 }
 
 def detect_category(text: str) -> str:

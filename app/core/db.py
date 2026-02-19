@@ -15,14 +15,23 @@ def insert_tasks(tasks: list):
 
 
 def get_summaries():
-    response = (
-        supabase
-        .table("summaries")
-        .select("id, summary, email_id,confidence, created_at")
-        .order("created_at", desc=True)
-        .execute()
-    )
-    return response.data
+        result = supabase.table("summaries") \
+            .select("summary, confidence, emails(subject, sender,has_attachment)") \
+            .order("created_at", desc=True) \
+            .execute()
+
+        formatted = []
+
+        for row in result.data:
+            formatted.append({
+                "summary": row["summary"],
+                "confidence": row["confidence"],
+                "subject": row["emails"]["subject"] if row.get("emails") else "",
+                "sender": row["emails"]["sender"] if row.get("emails") else "",
+                "has_attachment": row["emails"]["has_attachment"] if row.get("emails") else False
+        })
+
+        return formatted
 
 
 def get_tasks(completed: bool = False):

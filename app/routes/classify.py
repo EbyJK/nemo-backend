@@ -59,21 +59,49 @@ from app.ml.category_classifier import detect_category
 router = APIRouter()
 
 
-def decode_email_body(msg):
-    if msg.get("parts"):
-        for part in msg["parts"]:
-            try:
-                data = part["body"]["data"]
-                decoded = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
-                return decoded
-            except:
-                continue
-    try:
-        data = msg["body"]["data"]
-        decoded = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
-        return decoded
-    except:
-        return ""
+# def decode_email_body(msg):
+#     if msg.get("parts"):
+#         for part in msg["parts"]:
+#             try:
+#                 data = part["body"]["data"]
+#                 decoded = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+#                 return decoded
+#             except:
+#                 continue
+#     try:
+#         data = msg["body"]["data"]
+#         decoded = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+#         return decoded
+#     except:
+#         return ""
+def decode_email_body(payload):
+    body = ""
+
+    if "parts" in payload:
+        for part in payload["parts"]:
+            # Look for text/plain part
+            if part.get("mimeType") == "text/plain":
+                data = part["body"].get("data")
+                if data:
+                    body = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+                    return body
+
+            # Sometimes nested parts
+            if "parts" in part:
+                for subpart in part["parts"]:
+                    if subpart.get("mimeType") == "text/plain":
+                        data = subpart["body"].get("data")
+                        if data:
+                            body = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+                            return body
+
+    # fallback (single-part email)
+    if payload.get("body", {}).get("data"):
+        data = payload["body"]["data"]
+        body = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+
+    return body
+
 
 
 @router.get("/list")
