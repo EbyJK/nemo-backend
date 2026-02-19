@@ -1,37 +1,3 @@
-# import re
-
-# def detect_category(subject: str, body: str):
-#     text = f"{subject} {body}".lower()
-
-#     # --- Security / OTP ---
-#     if any(word in text for word in ["2-step", "otp", "verification", "security alert", "password reset"]):
-#         return "security"
-
-#     # --- Meeting / Calendar / Scheduling ---
-#     if any(word in text for word in ["meeting", "schedule", "call", "google calendar", "zoom", "teams"]):
-#         return "meeting"
-
-#     # --- Tasks / Reminders ---
-#     if any(word in text for word in ["reminder", "due", "deadline", "follow up", "todo"]):
-#         return "task"
-
-#     # --- Job-related ---
-#     if any(word in text for word in ["job", "hiring", "recruit", "career", "interview"]):
-#         return "job"
-
-#     # --- Newsletters ---
-#     if any(word in text for word in ["unsubscribe", "newsletter", "digest", "update", "summary"]):
-#         return "newsletter"
-
-#     # --- Promotions ---
-#     if any(word in text for word in ["offer", "sale", "discount", "promo", "deal"]):
-#         return "promotion"
-
-#     # --- Personal detection (very simple heuristic) ---
-#     if any(word in text for word in ["bro", "mom", "dad", "wanna", "hey", "miss you"]):
-#         return "personal"
-
-#     return "other"
 
 
 import re

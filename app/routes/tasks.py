@@ -13,17 +13,7 @@ class Task(BaseModel):
 class TaskListOutput(BaseModel):
     tasks: List[Task]
 
-# @router.post("/extract", response_model=TaskListOutput)
-# def extract_tasks(email: EmailInput):
-#     return {
-#         "tasks": [
-#             {
-#                 "title": "Attend meeting",
-#                 "due_date": "2025-01-05",
-#                 "priority": "high"
-#             }
-#         ]
-#     }
+
 
 @router.post("/extract", response_model=TaskListOutput)
 def extract_tasks(email: EmailInput):
