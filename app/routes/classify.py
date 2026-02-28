@@ -99,8 +99,27 @@ def list_emails():
 
         # ---- ML classifier (corporate/non-corporate) ----
         label, confidence = classify_proba(subject + " " + body)
+        is_corporate = (label == "corporate")
+
+        print(" DEBUG: classify.py is running")
+        # ---------------------------------------------
+        # BUSINESS KEYWORD BOOST (Rule-based override)
+        # ---------------------------------------------
+        business_keywords = [
+            "project", "status", "update", "action", "required",
+            "deliverable", "review", "meeting", "schedule",
+            "submit", "report", "documentation", "deadline"
+        ]
+
+        subject_lower = subject.lower()
+
+        # If subject contains corporate/business words → force corporate
+        if any(word in subject_lower for word in business_keywords):
+            is_corporate = True
+        
         # NEW → detect detailed category only if corporate
-        if label == "corporate":
+        # if label == "corporate":
+        if is_corporate:
           detailed = detect_category(subject + " " + body)
         else:
             detailed = "none"
@@ -112,7 +131,8 @@ def list_emails():
             "subject": subject,
             "sender": sender,
             "body": body[:500],
-            "is_corporate": label.lower(),
+            # "is_corporate": label.lower(),
+            "is_corporate": is_corporate,
             "category": category,         # <---- NEW CATEGORY
             "confidence": confidence,
              "detailed_category": detailed,

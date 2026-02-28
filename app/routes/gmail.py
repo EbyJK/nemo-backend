@@ -100,7 +100,7 @@ def list_emails():
         body = decode_email_body(msg["payload"])
         
         label, confidence = classify_proba(subject + " " + body)
-        
+        print(" DEBUG: gmail.py -> processing email")
         if label.lower() == "corporate":
              detailed_cat = detect_category((subject + " " + body).lower())
         else:

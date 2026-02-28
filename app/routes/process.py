@@ -7,6 +7,8 @@ from app.routes.summarize import summarize_email
 from app.routes.tasks import extract_tasks
 from app.core.db import insert_email, insert_summary, insert_tasks
 from app.ml.classifier import classify_proba
+from app.routes.tasks import extract_tasks as extract_tasks_backend
+
 
 
 router = APIRouter()
@@ -52,7 +54,8 @@ def process_email(email: EmailInput):
     })
     
      # 3. Generate & insert tasks
-    tasks_output = extract_tasks(email)
+    # tasks_output = extract_tasks(email)
+    tasks_output = extract_tasks_backend(email)
     task_rows = []
 
     for task in tasks_output["tasks"]:

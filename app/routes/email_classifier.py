@@ -11,6 +11,9 @@ from app.routes.tasks import extract_tasks
 from app.core.supabase import supabase
 from app.schemas.email import EmailInput
 from app.routes.summarize import generate_summary
+# from app.routes.tasks_extraction import extract_tasks_api
+from app.routes.tasks import extract_tasks as extract_tasks_backend
+
 
 router = APIRouter()
 def email_exists(gmail_id: str):
@@ -138,9 +141,32 @@ def classified_emails():
         # 1️⃣ Corporate classifier
         label, confidence = classify_proba(email_text)
 
-        if label.lower() != "corporate":
-            continue
+        # if label.lower() != "corporate":
+        #     continue
 
+        is_corporate = (label.lower() == "corporate")
+        print("DEBUG: email_classifier.py -> classify_emails() is running")
+# ------------------------------------------------------
+# BUSINESS KEYWORD OVERRIDE 
+# ------------------------------------------------------
+        business_keywords = [
+            "project", "status", "update", "action", "required",
+            "review", "deliverable", "deadline", "schedule",
+            "submit", "report", "documentation", "meeting", "team"
+        ]
+
+        subject_lower = subject.lower()
+        body_lower = body.lower()
+
+        if any(keyword in subject_lower for keyword in business_keywords):
+            is_corporate = True
+
+        # If still not corporate → skip
+        if not is_corporate:
+            continue
+        # ------------------------------------------------------
+        
+        
         attachment_types = [att["type"] for att in attachments]             
         # 2️⃣ Insert email into DB
         email_row = insert_email({
@@ -176,9 +202,32 @@ def classified_emails():
         #     "summary": summary_output["summary"]
         # })
 
+
+
+
         # 4️⃣ Extract tasks
+        
+        # tasks_output = extract_tasks_api(
+        #     EmailInput(subject=subject, body=body, sender=sender)
+        # )
+
+        # task_rows = []
+        # for t in tasks_output["tasks"]:
+        #     task_rows.append({
+        #         "email_id": email_row["id"],
+        #         "title": t.get("title"),
+        #         "priority": t.get("priority", "medium"),
+        #         "due_date": t.get("due_date")   # if model returns
+        #     })
+    
+        # if task_rows:
+        #     insert_tasks(task_rows)
+        
+        
+        
+        
         tasks_output = extract_tasks(
-            EmailInput(subject=subject, body=body, sender=sender)
+            EmailInput(subject=subject, body=body, sender=sender,summary=summary_text)
         )
 
         task_rows = []
@@ -192,6 +241,12 @@ def classified_emails():
 
         if task_rows:
             insert_tasks(task_rows)
+
+
+
+
+
+
 
         # 5️⃣ Mark email as read
         # service.users().messages().modify(
