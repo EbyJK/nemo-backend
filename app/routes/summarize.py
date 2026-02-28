@@ -15,15 +15,15 @@ class SummaryOutput(BaseModel):
     summary: str
 
 # 🔹 Load model ONLY once when server starts
-MODEL_PATH = "app/ml/t5_summarizer"   # ⚠️ change if your folder name is different
+MODEL_PATH = "app/ml/t5_summarizer"  
 
 try:
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
     model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH)
     model.eval()
-    print("✅ Summarizer model loaded successfully.")
+    print(" Summarizer model loaded successfully.")
 except Exception as e:
-    print("❌ Error loading summarizer model:", e)
+    print(" Error loading summarizer model:", e)
     tokenizer = None
     model = None
 

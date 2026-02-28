@@ -1,7 +1,7 @@
 # ------------------------------------------------------------
 #  task_extractor.py
-#  Clean production-grade module derived from your notebook
-#  Author: Eby JK (NEMO Project)
+
+
 # ------------------------------------------------------------
 
 from __future__ import annotations

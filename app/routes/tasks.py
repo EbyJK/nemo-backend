@@ -1,152 +1,3 @@
-# from fastapi import APIRouter
-# from app.schemas.email import EmailInput
-# from pydantic import BaseModel
-# from typing import List, Optional
-# from datetime import datetime
-
-# from app.ml.task_extractor.task_extractor import extract_tasks as ml_extract
-
-# router = APIRouter()
-
-# class Task(BaseModel):
-#     title: str
-#     due_date: Optional[str] = None
-#     priority: str
-
-# class TaskListOutput(BaseModel):
-#     tasks: List[Task]
-
-# def clean_title(description: str) -> str:
-#     """
-#     Option B — Clean polite/leading words.
-#     Removes words like 'please', 'kindly', 'could you', etc.
-#     """
-#     desc = description.strip()
-
-#     # lowercase copy for detection
-#     d = desc.lower()
-
-#     polite_prefixes = [
-#         "please ", "kindly ", "can you ", "could you ",
-#         "i request you to ", "i request you ", "pls ",
-#         "please do ", "please make sure to "
-#     ]
-
-#     for p in polite_prefixes:
-#         if d.startswith(p):
-#             desc = desc[len(p):]
-
-#     # Capitalize first letter
-#     if len(desc) > 0:
-#         desc = desc[0].upper() + desc[1:]
-
-#     return desc
-
-
-# def extract_tail_sentences(body: str, count: int = 2) -> str:
-#     """Extract last 1–2 meaningful sentences from email body."""
-#     parts = [s.strip() for s in body.split('.') if s.strip()]
-#     if not parts:
-#         return ""
-#     return ". ".join(parts[-count:])
-
-# @router.post("/extract", response_model=TaskListOutput)
-# def extract_tasks(email: EmailInput):
-    
-
-#     """
-#     ML-based task extraction using:
-#     - summary (if provided)
-#     - OR subject+body fallback
-#     - last 2 sentences of body
-#     - real ML task model
-#     """
-#     from app.ml.task_extractor.task_extractor import extract_tasks as ml_extract
-
-#     # 1) Extract summary if available (without changing summarizer code)
-#     summary_text = ""
-#     if hasattr(email, "summary") and email.summary:
-#         if isinstance(email.summary, dict):
-#             summary_text = email.summary.get("summary", "")
-#         elif isinstance(email.summary, tuple):
-#             summary_text = email.summary[0]
-#         else:
-#             summary_text = str(email.summary)
-#     else:
-#         summary_text = f"{email.body}"
-
-#     # 2) Extract last 2 sentences of body
-#     def extract_tail(body):
-#         parts = [s.strip() for s in body.split('.') if s.strip()]
-#         return ". ".join(parts[-2:]) if parts else ""
-
-#     tail_text = extract_tail(email.body)
-
-#     # 3) Combine (Option B)
-#     combined_text = summary_text + ". " + tail_text
-
-#     # 4) Run ML extractor
-#     raw_tasks = ml_extract(combined_text)
-
-#     # 5) Clean title and remove subject contamination
-#     def clean_title(description: str) -> str:
-#         desc = description.strip()
-#         # remove subject if prefixed
-#         if email.subject.lower() in desc.lower():
-#             desc = desc.replace(email.subject, "", 1).strip()
-
-#         # polite prefixes
-#         prefixes = [
-#             "please ", "kindly ", "can you ", "could you ", "pls ",
-#             "i request you to ", "please do "
-#         ]
-#         dl = desc.lower()
-#         for p in prefixes:
-#             if dl.startswith(p):
-#                 desc = desc[len(p):]
-#                 break
-
-#         # Capitalize
-#         if desc:
-#             desc = desc[0].upper() + desc[1:]
-#         return desc
-
-#     # 6) Convert and remove duplicates
-#     unique = {}
-#     for t in raw_tasks:
-#         title = clean_title(t.get("description", ""))
-
-#         if not title:
-#             continue
-        
-        
-#         if title not in unique:
-#             unique[title] = {
-#                 "title": title,
-#                 "due_date": t.get("due_date"),
-#                 "priority": t.get("priority", "medium").lower()
-#             }
-
-#     return {"tasks": list(unique.values())}
-
-
-
-
-
-
-
-
-# # @router.post("/extract", response_model=TaskListOutput)
-# # def extract_tasks(email: EmailInput):
-# #     return {
-# #         "tasks": [
-# #             {
-# #                 "title": "Submit Q4 budget report",
-# #                 "due_date": "2026-01-05T17:00:00",
-# #                 "priority": "high"
-# #             }
-# #         ]
-# #     }
 
 
 
@@ -363,3 +214,18 @@ def get_tasks(completed: bool = False):
     ]
 
     return tasks
+
+
+
+
+# # @router.post("/extract", response_model=TaskListOutput)
+# # def extract_tasks(email: EmailInput):
+# #     return {
+# #         "tasks": [
+# #             {
+# #                 "title": "Submit Q4 budget report",
+# #                 "due_date": "2026-01-05T17:00:00",
+# #                 "priority": "high"
+# #             }
+# #         ]
+# #     }

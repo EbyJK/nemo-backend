@@ -7,7 +7,7 @@ from app.routes import calendar
 from app.routes import gmail
 
 from app.routes import email_classifier
-# from app.routes.tasks_extraction import router as tasks_extraction_router
+
 
 app = FastAPI(title="Nemo Backend")
 
@@ -42,7 +42,7 @@ app.include_router(read.router, tags=["Read"])
 
 app.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
 
-# app.include_router(tasks_extraction_router, prefix="/tasks", tags=["Tasks"])
+
 
 @app.get("/")
 def health_check():
