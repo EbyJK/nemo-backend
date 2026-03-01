@@ -10,6 +10,11 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 from app.ml.task_extractor.task_extractor import extract_tasks as ml_extract
+from app.core.db import supabase
+from zoneinfo import ZoneInfo
+from dateutil import parser
+
+
 
 router = APIRouter()
 
@@ -17,10 +22,34 @@ class Task(BaseModel):
     title: str
     due_date: Optional[str] = None
     priority: str
-
+    context: Optional[str] = None
+    source_sentence: Optional[str] = None
+    
 class TaskListOutput(BaseModel):
     tasks: List[Task]
 
+class SaveTasksInput(BaseModel):
+    email_id: str
+    tasks: List[Task]
+    
+def fix_timezone(dt_str: str | None):
+    if not dt_str:
+        return None
+   
+    
+    try:
+        dt = parser.isoparse(dt_str)
+
+        # If the timestamp has NO timezone → assume UTC
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+
+        # Convert UTC → IST
+        return dt.astimezone(ZoneInfo("UTC")).isoformat()
+
+    except Exception:
+        return dt_str
+    
 
 # ------------------------------------------------------------
 # CLEAN TITLE (Option B) - Remove polite words & fix casing
@@ -31,6 +60,14 @@ def clean_title(description: str, subject: str = "") -> str:
     # Remove subject if it appears inside
     if subject and subject.lower() in desc.lower():
         desc = desc.replace(subject, "", 1).strip()
+
+    # Remove greetings
+    greetings = ["hi ", "hi eby", "hello ", "dear ", "hey "]
+    d = desc.lower()
+    for g in greetings:
+        if d.startswith(g):
+            desc = desc[len(g):].strip()
+            break
 
     # Polite prefixes to remove
     polite_prefixes = [
@@ -146,7 +183,8 @@ def extract_tasks(email: EmailInput):
     for t in raw_tasks:
         raw_desc = t.get("description", "")
         title = clean_title(raw_desc, subject=email.subject)
-
+        
+        print("RAW ML due_date:", t.get("due_date"))
         if not title:
             continue
 
@@ -158,62 +196,148 @@ def extract_tasks(email: EmailInput):
         if title not in unique:
             unique[title] = {
                 "title": title,
-                "due_date": t.get("due_date"),
-                "priority": t.get("priority", "medium").lower()
+                "due_date": fix_timezone(t.get("due_date")),
+                "priority": t.get("priority", "medium").lower(),
+                "context": f"From email: {email.subject}",
+                "source_sentence": raw_desc
             }
+        print("RAW TASKS FROM ML:", raw_tasks)
 
     return {"tasks": list(unique.values())}
 
 
 
 
+@router.post("/save")
+def save_tasks(payload: SaveTasksInput):
+    saved = []
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@router.get("/tasks")
-def get_tasks(completed: bool = False):
-    """
-    Dummy corporate-grade tasks.
-    This shape is FINAL and ML will later replace values.
-    """
-
-    tasks = [
-        {
-            "title": "Submit Q4 budget report",
-            "due_date": "2026-01-05T17:00:00",
-            "priority": "high",
-            "context": "Requested by Finance team via corporate email",
-            "source_sentence": "Please submit the Q4 budget report by Jan 5 EOD",
+    for task in payload.tasks:
+        res = supabase.table("tasks").insert({
+            "email_id": payload.email_id,
+            "title": task.title,
+            "due_date": task.due_date,
+            "priority": task.priority,
+            "context": task.context,
+            "source_sentence": task.source_sentence,
             "completed": False
-        },
-        {
-            "title": "Client review meeting with ABC Corp",
-            "due_date": "2026-01-10T15:00:00",
-            "priority": "high",
-            "context": "Meeting scheduled with external client",
-            "source_sentence": "Let's have a review call on Jan 10 at 3 PM",
-            "completed": False
-        }
-    ]
+        }).execute()
 
-    return tasks
+        saved.append(res.data)
+        
+        print("Saving tasks:", payload.tasks)
+
+    return {"status": "saved", "tasks": saved}
+
+
+
+# ------------------------------------------------------------
+# GET TASKS (REAL SUPABASE QUERY)
+# ------------------------------------------------------------
+# @router.get("/tasks")
+# def get_tasks(completed: bool = False):
+#     res = (
+#         supabase.table("tasks")
+#         .select("*")
+#         .eq("completed", completed)
+#         .order("created_at", desc=False)
+#         .execute()
+#     )
+
+#     return res.data
+
+# ------------------------------------------------------------
+# PATCH UPDATE COMPLETED
+# ------------------------------------------------------------
+@router.patch("/{task_id}")
+def update_task(task_id: str, payload: dict):
+    from app.core.db import supabase
+
+    updates = {}
+    if "completed" in payload:
+        updates["completed"] = payload["completed"]
+
+    if not updates:
+        return {"error": "No valid fields to update"}
+
+    res = (
+        supabase.table("tasks")
+        .update(updates)
+        .eq("id", task_id)
+        .execute()
+    )
+
+    return {"status": "success", "updated": updates}
+
+
+
+
+
+
+@router.get("")
+def get_tasks(completed: str | None= None):
+    from app.core.db import supabase
+     
+    print("Completed param received:", completed)
+
+     
+    query = supabase.table("tasks").select("*")
+    
+    
+    # if completed is not None:
+    #     query = query.eq("completed", completed)
+    
+    if completed == "true":
+        query = query.eq("completed", True)
+    elif completed == "false":
+        query = query.eq("completed", False)
+    
+    
+    
+    res = query.order("created_at", desc=True).execute()
+
+    print("Returned rows:", len(res.data))
+    return res.data
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @router.get("/tasks")
+# def get_tasks(completed: bool = False):
+#     """
+#     Dummy corporate-grade tasks.
+#     This shape is FINAL and ML will later replace values.
+#     """
+
+#     tasks = [
+#         {
+#             "title": "Submit Q4 budget report",
+#             "due_date": "2026-01-05T17:00:00",
+#             "priority": "high",
+#             "context": "Requested by Finance team via corporate email",
+#             "source_sentence": "Please submit the Q4 budget report by Jan 5 EOD",
+#             "completed": False
+#         },
+#         {
+#             "title": "Client review meeting with ABC Corp",
+#             "due_date": "2026-01-10T15:00:00",
+#             "priority": "high",
+#             "context": "Meeting scheduled with external client",
+#             "source_sentence": "Let's have a review call on Jan 10 at 3 PM",
+#             "completed": False
+#         }
+#     ]
+
+#     return tasks
 
 
 
@@ -229,3 +353,5 @@ def get_tasks(completed: bool = False):
 # #             }
 # #         ]
 # #     }
+
+

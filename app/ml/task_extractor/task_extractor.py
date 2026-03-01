@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import spacy
 from dateutil import parser as dateparser
 from typing import List, Dict, Optional
-
+from zoneinfo import ZoneInfo
 # ------------------------------------------------------------
 # Load spaCy model (use sm for speed in backend)
 # ------------------------------------------------------------
@@ -36,26 +36,28 @@ ACTION_VERBS = {
     "respond", "organize", "plan", "confirm", "draft", "collect"
 }
 
-# ------------------------------------------------------------
-# Utility: convert datetimes to IST ISO format
-# ------------------------------------------------------------
-def to_ist(dt: datetime) -> datetime:
-    return dt + timedelta(hours=5, minutes=30)
 
-def iso_ist(dt: datetime) -> str:
-    return to_ist(dt).isoformat()
-
-# ------------------------------------------------------------
-# Extract a date from sentence using dateparser
-# ------------------------------------------------------------
 def extract_due_date(text: str) -> Optional[str]:
+   
+    
+    
     try:
         dt = dateparser.parse(text, fuzzy=True)
-        if dt:
-            return iso_ist(dt)
-    except:
+
+        if not dt:
+            return None
+
+        # If no timezone info → assume Asia/Kolkata
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=ZoneInfo("Asia/Kolkata"))
+
+        # Convert to UTC for storage
+        dt_utc = dt.astimezone(ZoneInfo("UTC"))
+
+        return dt_utc.isoformat()
+
+    except Exception:
         return None
-    return None
 
 # ------------------------------------------------------------
 # Determine priority from keywords

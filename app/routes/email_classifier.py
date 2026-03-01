@@ -229,19 +229,42 @@ def classified_emails():
         tasks_output = extract_tasks(
             EmailInput(subject=subject, body=body, sender=sender,summary=summary_text)
         )
-
+        # print("TASKS OUTPUT:", tasks_output)
         task_rows = []
         for task in tasks_output["tasks"]:
+            raw_due = task.get("due_date")
+           
+        
+            
             task_rows.append({
                 "email_id": email_row["id"],
                 "title": task["title"],
-                "due_date": task.get("due_date"),
-                "priority": task["priority"]
+                # "due_date": task.get("due_date"),
+                "due_date": raw_due,
+                "priority": task["priority"],
+                "context": task.get("context"),
+                "source_sentence": task.get("source_sentence"),
+                "completed":False
             })
 
         if task_rows:
-            insert_tasks(task_rows)
+             # Prevent duplicates for same email_id + title
+            existing = supabase.table("tasks") \
+                .select("title") \
+                .eq("email_id", email_row["id"]) \
+                .execute()
 
+            existing_titles = {t["title"] for t in existing.data}
+
+            final_rows = [t for t in task_rows if t["title"] not in existing_titles]
+
+            if final_rows:
+                insert_tasks(final_rows)
+            
+            # insert_tasks(task_rows)
+            # print("TASK_ROWS:", task_rows)
+            # print("EXISTING_TITLES:", existing_titles)
+            # print("FINAL_ROWS:", final_rows)
 
 
 
