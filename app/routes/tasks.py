@@ -25,6 +25,8 @@ class Task(BaseModel):
     context: Optional[str] = None
     source_sentence: Optional[str] = None
     
+
+    
 class TaskListOutput(BaseModel):
     tasks: List[Task]
 
@@ -249,27 +251,109 @@ def save_tasks(payload: SaveTasksInput):
 # ------------------------------------------------------------
 # PATCH UPDATE COMPLETED
 # ------------------------------------------------------------
+# @router.patch("/{task_id}")
+# def update_task(task_id: str, payload: dict):
+#     from app.core.db import supabase
+
+#     updates = {}
+#     if "completed" in payload:
+#         updates["completed"] = payload["completed"]
+
+#     if not updates:
+#         return {"error": "No valid fields to update"}
+
+#     res = (
+#         supabase.table("tasks")
+#         .update(updates)
+#         .eq("id", task_id)
+#         .execute()
+#     )
+
+#     return {"status": "success", "updated": updates}
+
+# @router.patch("/{task_id}")
+# def update_task(task_id: str, payload: dict):
+#     from app.core.db import supabase
+
+#     # Allow updating these fields
+#     allowed_fields = ["title", "due_date", "priority", "completed"]
+
+#     updates = {k: v for k, v in payload.items() if k in allowed_fields}
+
+#     if not updates:
+#         return {"error": "No valid fields to update"}
+#     supabase.table("tasks").update(updates).eq("id", task_id).execute()
+    
+    
+    
+#     res = (
+#         supabase.table("tasks")
+#         .select("*")
+#         .eq("id", task_id)
+#         .single
+#         .execute()
+#     )
+
+#     if res.data:
+#         return res.data
+#     print("Update response:", res)
+#     return {"error": "Task not found"}
+
+
 @router.patch("/{task_id}")
 def update_task(task_id: str, payload: dict):
     from app.core.db import supabase
 
-    updates = {}
-    if "completed" in payload:
-        updates["completed"] = payload["completed"]
+    allowed_fields = ["title", "due_date", "priority", "completed"]
+    updates = {k: v for k, v in payload.items() if k in allowed_fields}
 
     if not updates:
         return {"error": "No valid fields to update"}
 
-    res = (
-        supabase.table("tasks")
+    # 1️⃣ Update row
+    update_res = (
+        supabase
+        .table("tasks")
         .update(updates)
         .eq("id", task_id)
         .execute()
     )
 
-    return {"status": "success", "updated": updates}
+    print("Update response:", update_res)
+
+    # 2️⃣ Fetch updated row
+    fetch_res = (
+        supabase
+        .table("tasks")
+        .select("*")
+        .eq("id", task_id)
+        .single()
+        .execute()
+    )
+
+    print("Fetch response:", fetch_res)
+
+    if fetch_res.data:
+        return fetch_res.data
+
+    return {"error": "Task not found"}
 
 
+
+
+
+@router.delete("/{task_id}")
+def delete_task(task_id: str):
+    from app.core.db import supabase
+
+    res = (
+        supabase.table("tasks")
+        .delete()
+        .eq("id", task_id)
+        .execute()
+    )
+
+    return {"status": "deleted", "task_id": task_id}
 
 
 
