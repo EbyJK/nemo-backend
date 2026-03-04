@@ -54,7 +54,8 @@ CATEGORIES = {
     "files":[
         r"\bfile\b", r"\bdocument\b", r"\battachment\b",r"\battached",
         r"\bpdf\b", r"\bword\b", r"\bppt\b",r"\bspreadsheet\b", r"\bdrive\b", r"\bshare\b", r"\baccess\b", r"\bpermission\b",
-        r"\bversion\b", r"\brevision\b", r"\bupdate\b",r"\bscreenshot\b", r"\bphoto\b", r"\bimage\b"
+        r"\bversion\b", r"\brevision\b", r"\bupdate\b",r"\bscreenshot\b", r"\bphoto\b", r"\bimage\b",r"\bfolder\b",r"\bdrive\b",r"\bshared\b"
+        r"\bcontribute\b",r"\bshared with you\b",r"\bfiles\b",r"\brelated to\b"
     ]
 }
 
