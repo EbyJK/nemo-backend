@@ -47,3 +47,4 @@ app.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
 @app.get("/")
 def health_check():
     return {"status": "Nemo backend running"}
+
