@@ -124,8 +124,6 @@ def push_task_to_calendar(
 
     service = build("calendar", "v3", credentials=credentials)
 
-    # start_time = datetime.fromisoformat(due_date)
-    # start_time = start_time.replace(tzinfo=ZoneInfo("Asia/Kolkata"))                    .astimezone(ZoneInfo("Asia/Kolkata"))
     start_time = parser.isoparse(due_date)                               
     end_time = start_time + timedelta(hours=1)
     print("RAW due_date received:", due_date)
