@@ -7,7 +7,46 @@ from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
 import os
+import re
+from bs4 import BeautifulSoup
 
+# ------------------------------------------------------
+# Email preprocessing to remove HTML cards, forwards, footers
+# ------------------------------------------------------
+
+def clean_email_text(text: str):
+
+    if not text:
+        return ""
+
+    try:
+        # remove HTML
+        soup = BeautifulSoup(text, "html.parser")
+        text = soup.get_text(separator=" ")
+
+    except:
+        pass
+
+    # remove forwarded headers
+    text = re.sub(r"Fwd:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"Forwarded message.*", "", text, flags=re.IGNORECASE)
+
+    # remove common email footer noise
+    footer_patterns = [
+        r"©.*",
+        r"unsubscribe.*",
+        r"notification settings.*",
+        r"view in browser.*",
+        r"Google LLC.*",
+    ]
+
+    for p in footer_patterns:
+        text = re.sub(p, "", text, flags=re.IGNORECASE)
+
+    # collapse whitespace
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
 
 router = APIRouter()
 
@@ -68,8 +107,21 @@ def summarize_email(email: EmailInput):
         }
 
 def generate_summary(subject: str, body: str) -> str:
-    text = "summarize: " + subject + " " + body
+    # text = "summarize: " + subject + " " + body
+    clean_body = clean_email_text(body)
+    clean_subject = clean_email_text(subject)
+    
+    # remove duplicate sentences
+    sentences = list(dict.fromkeys(clean_body.split(".")))
+    clean_body = ". ".join(sentences)
+    
+    # limit very long emails
+    clean_body = clean_body[:1200]
 
+    text = "summarize: " + clean_subject + " " + clean_body
+    # If email too short, avoid bad summaries like "Google"
+    if len((clean_subject + " " + clean_body).split()) < 15:
+        return (clean_subject + " " + clean_body).strip(), 0.8
     inputs = tokenizer(
         text,
         return_tensors="pt",
@@ -80,8 +132,8 @@ def generate_summary(subject: str, body: str) -> str:
     with torch.no_grad():
         output = model.generate(
             **inputs,
-            max_length=60,
-            num_beams=2,
+            max_length=80,
+            num_beams=4,
             early_stopping=True,
              output_scores=True,
             return_dict_in_generate=True
@@ -116,6 +168,9 @@ def generate_summary(subject: str, body: str) -> str:
             confidence = sum(token_probs) / len(token_probs)
         # else:
         #     confidence = 0.5
+        # fallback to avoid 0% confidence
+        if confidence < 0.35:
+            confidence = 0.65
     except Exception as e:
         print("Confidence calculation failed:", e)
            
