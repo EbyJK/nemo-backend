@@ -13,7 +13,7 @@ from app.schemas.email import EmailInput
 from app.routes.summarize import generate_summary
 # from app.routes.tasks_extraction import extract_tasks_api
 from app.routes.tasks import extract_tasks as extract_tasks_backend
-
+import re
 
 router = APIRouter()
 def email_exists(gmail_id: str):
@@ -89,6 +89,40 @@ def extract_attachments(payload):
             })
 
     return attachments
+# ------------------------------------------------------
+# Notification / Card Email Cleaner
+# ------------------------------------------------------
+
+def clean_notification_email(body: str):
+
+    if not body:
+        return ""
+
+    text = body
+
+    # remove repeated UI words
+    text = re.sub(r"\b(Open|View|Click here|Download)\b", "", text, flags=re.IGNORECASE)
+
+    # remove links
+    text = re.sub(r"http\S+", "", text)
+
+    # remove excessive whitespace
+    text = re.sub(r"\s+", " ", text)
+
+    # remove duplicate sentences
+    sentences = text.split(".")
+    seen = set()
+    cleaned = []
+
+    for s in sentences:
+        s = s.strip()
+        if s and s not in seen:
+            cleaned.append(s)
+            seen.add(s)
+
+    return ". ".join(cleaned)
+
+
 
 
 @router.get("/emails/classified")
@@ -109,7 +143,7 @@ def classified_emails():
 
     result = service.users().messages().list(
         userId="me",
-        maxResults=20,
+        maxResults=5,                      #important for count
         q="is:unread"
     ).execute()
 
@@ -189,8 +223,11 @@ def classified_emails():
         #     EmailInput(subject=subject, body=body, sender=sender)
         # )
         from app.routes.summarize import generate_summary
-        summary_text,summary_confidence = generate_summary(subject, body)
+        # summary_text,summary_confidence = generate_summary(subject, body)
+        clean_body = clean_notification_email(body)
 
+        summary_text, summary_confidence = generate_summary(subject, clean_body)
+        
         insert_summary({
          "email_id": email_row["id"],
         "summary": summary_text,
