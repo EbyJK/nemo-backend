@@ -264,7 +264,7 @@ def update_task(task_id: str, payload: dict):
     if not updates:
         return {"error": "No valid fields to update"}
 
-    # 1️⃣ Update row
+    # 1️ Update row
     update_res = (
         supabase
         .table("tasks")
@@ -275,7 +275,7 @@ def update_task(task_id: str, payload: dict):
 
     print("Update response:", update_res)
 
-    # 2️⃣ Fetch updated row
+    # 2️ Fetch updated row
     fetch_res = (
         supabase
         .table("tasks")
