@@ -101,7 +101,7 @@ def summarize_email(email: EmailInput):
         }
 
     except Exception as e:
-        print("❌ Summarization error:", e)
+        print(" Summarization error:", e)
         return {
             "summary": "Error during summarization. Dummy fallback."
         }
