@@ -76,7 +76,7 @@ def safe_execute(table_call, retries=3, delay=1, max_delay=10):
     raise RuntimeError(f"Supabase call failed after {retries} retries due to a connection error.")
 
 
-# # 🔥 Create a custom HTTP client (THIS FIXES YOUR ERROR)
+# #  Create a custom HTTP client (THIS FIXES YOUR ERROR)
 # http_client = httpx.Client(
 #     http2=False,  # Disable HTTP/2 (fixes RemoteProtocolError)
 #     limits=httpx.Limits(
