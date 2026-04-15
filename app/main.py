@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(gmail.router, prefix="/gmail", tags=["Gmail"])
-app.include_router(email_classifier.router, tags=["Email Classification"])
+# app.include_router(email_classifier.router, tags=["Email Classification"])
 
 app.include_router(
     classify.router,
@@ -32,7 +32,7 @@ app.include_router(
     tags=["Classification"]
 )
 
-app.include_router(summarize.router, prefix="/summarize", tags=["Summarization"])
+# app.include_router(summarize.router, prefix="/summarize", tags=["Summarization"])
 
 app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 
