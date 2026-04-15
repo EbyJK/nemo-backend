@@ -8,8 +8,17 @@ from src.preprocess import clean_injected_sentence
 
 MODEL_NAME = "facebook/bart-large-cnn"
 
-tokenizer = BartTokenizer.from_pretrained(MODEL_NAME)
-model = BartForConditionalGeneration.from_pretrained(MODEL_NAME)
+# tokenizer = BartTokenizer.from_pretrained(MODEL_NAME)
+# model = BartForConditionalGeneration.from_pretrained(MODEL_NAME)
+_tokenizer = None
+_model = None
+
+def get_model():
+    global _tokenizer, _model
+    if _model is None or _tokenizer is None:
+        _tokenizer = BartTokenizer.from_pretrained(MODEL_NAME)
+        _model = BartForConditionalGeneration.from_pretrained(MODEL_NAME)
+    return _tokenizer, _model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
@@ -100,6 +109,7 @@ def abstractive_rewrite(prompt: str,
                         extractive_summary: str,
                         entities: dict) -> str:
 
+    tokenizer, model = get_model()
     # 🔹 Build FULL text that must appear in output
     full_input = build_full_rewrite_input(
         extractive_summary,

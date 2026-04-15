@@ -56,20 +56,40 @@ class SummaryOutput(BaseModel):
 # 🔹 Load model ONLY once when server starts
 MODEL_PATH = "app/ml/t5_summarizer"  
 
-try:
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH)
-    model.eval()
-    print(" Summarizer model loaded successfully.")
-except Exception as e:
-    print(" Error loading summarizer model:", e)
-    tokenizer = None
-    model = None
+# try:
+#     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+#     model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH)
+#     model.eval()
+#     print(" Summarizer model loaded successfully.")
+# except Exception as e:
+#     print(" Error loading summarizer model:", e)
+#     tokenizer = None
+#     model = None
+
+
+_tokenizer = None
+_model = None
+
+def get_summarizer():
+    global _tokenizer, _model
+
+    if _model is None or _tokenizer is None:
+        try:
+            _tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+            _model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH)
+            _model.eval()
+            print("Summarizer model loaded successfully.")
+        except Exception as e:
+            print("Error loading summarizer model:", e)
+            _tokenizer = None
+            _model = None
+
+    return _tokenizer, _model
 
 
 @router.post("/", response_model=SummaryOutput)
 def summarize_email(email: EmailInput):
-
+    tokenizer, model = get_summarizer() 
     # 🔹 If model not loaded → fallback dummy summary
     if tokenizer is None or model is None:
         return {
@@ -107,6 +127,7 @@ def summarize_email(email: EmailInput):
         }
 
 def generate_summary(subject: str, body: str) -> str:
+    tokenizer, model = get_summarizer() 
     # text = "summarize: " + subject + " " + body
     clean_body = clean_email_text(body)
     clean_subject = clean_email_text(subject)
