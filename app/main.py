@@ -2,11 +2,11 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI
-# from app.routes import classify, summarize, tasks,process,read
+from app.routes import classify, summarize, tasks,process,read
 from app.routes import calendar
 from app.routes import gmail
 
-# from app.routes import email_classifier
+from app.routes import email_classifier
 
 
 app = FastAPI(title="Nemo Backend")
