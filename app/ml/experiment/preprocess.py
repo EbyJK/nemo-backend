@@ -2,7 +2,18 @@ import re
 import spacy
 from nltk.tokenize import sent_tokenize
 
-nlp = spacy.load("en_core_web_sm")
+# nlp = spacy.load("en_core_web_sm")
+
+
+
+nlp = None  # do not load at startup
+
+def get_nlp():
+    global nlp
+    if nlp is None:
+        nlp = spacy.load("en_core_web_sm")
+    return nlp
+
 
 def remove_signature(text: str):
     """

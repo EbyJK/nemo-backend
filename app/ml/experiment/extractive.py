@@ -2,7 +2,16 @@ import numpy as np
 import networkx as nx
 import spacy
 
-nlp = spacy.load("en_core_web_sm")
+# nlp = spacy.load("en_core_web_sm")
+
+
+nlp = None  # do not load at startup
+
+def get_nlp():
+    global nlp
+    if nlp is None:
+        nlp = spacy.load("en_core_web_sm")
+    return nlp
 
 # ---------- Sentence Similarity ----------
 def sentence_similarity(sent1: str, sent2: str) -> float:
