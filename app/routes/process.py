@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.schemas.email import EmailInput
 from app.schemas.classification import ClassificationOutput
 # from app.routes.classify import classify_email
-from app.routes.summarize import summarize_email
+# from app.routes.summarize import summarize_email
 from app.routes.tasks import extract_tasks
 from app.core.db import insert_email, insert_summary, insert_tasks
 from app.ml.classifier import classify_proba
